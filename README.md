@@ -35,7 +35,9 @@ The U-Net is a robust general-purpose deep learning architecture
 
 ## Model
 We use a 5-level 3D U-Net architecture, with Leaky ReLU activation 
-($\alpha = 0.2$), learning rate ($\alpha = 10 ^ {-5}$), Adam 
+(<img src="https://latex.codecogs.com/svg.image?\alpha&space;=&space;0.2" 
+title="\alpha = 0.2" />), learning rate (<img src="https://latex.codecogs.com/svg.image?\alpha&space;=&space;10&space;^&space;{-5}" 
+title="\alpha = 10 ^ {-5}" />), Adam 
 optimizer, mean average error (MAE) loss function, z-score 
 intensity normalization and co-registered volumes resized 
 to 128x128x128 for each tasks. Batch size was 3 in application 1, 
