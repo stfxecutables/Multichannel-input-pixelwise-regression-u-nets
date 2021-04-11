@@ -9,7 +9,6 @@ __pycache__/
 *.nii
 *.npz
 *.tar.gz
-*.png
 
 # C extensions
 *.so
