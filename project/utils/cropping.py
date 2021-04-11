@@ -8,6 +8,7 @@ from typing import List
 
 
 def create_nonzero_mask(data: np.ndarray) -> np.ndarray:
+    # Code is adapted from: https://github.com/MIC-DKFZ/nnUNet/blob/master/nnunet/preprocessing/cropping.py#L23
     from scipy.ndimage import binary_fill_holes
 
     assert len(data.shape) == 3, "data must have shape (C, X, Y)"
@@ -19,6 +20,7 @@ def create_nonzero_mask(data: np.ndarray) -> np.ndarray:
 
 
 def get_bbox_from_mask(mask: np.ndarray, outside_value: int = 0) -> List[List[int]]:
+    # Code is adapted from: https://github.com/MIC-DKFZ/nnUNet/blob/master/nnunet/preprocessing/cropping.py#L34
     mask_voxel_coords = np.where(mask != outside_value)
     minzidx = int(np.min(mask_voxel_coords[0]))
     maxzidx = int(np.max(mask_voxel_coords[0])) + 1
@@ -30,12 +32,18 @@ def get_bbox_from_mask(mask: np.ndarray, outside_value: int = 0) -> List[List[in
 
 
 def crop_to_bbox(img: np.ndarray, bbox: List[List[int]]) -> np.ndarray:
+    # Code is adapted from: https://github.com/MIC-DKFZ/nnUNet/blob/master/nnunet/preprocessing/cropping.py#L45
     assert len(img.shape) == 3, "only supports 3d images"
-    resizer = (slice(bbox[0][0], bbox[0][1]), slice(bbox[1][0], bbox[1][1]), slice(bbox[2][0], bbox[2][1]))
+    resizer = (
+        slice(bbox[0][0], bbox[0][1]),
+        slice(bbox[1][0], bbox[1][1]),
+        slice(bbox[2][0], bbox[2][1]),
+    )
     return img[resizer]
 
 
 def crop_to_nonzero(img: np.ndarray) -> np.ndarray:
+    # Code is adapted from: https://github.com/MIC-DKFZ/nnUNet/blob/master/nnunet/preprocessing/cropping.py#L84
     nonzero_mask = create_nonzero_mask(img)
     bbox = get_bbox_from_mask(nonzero_mask, 0)
 

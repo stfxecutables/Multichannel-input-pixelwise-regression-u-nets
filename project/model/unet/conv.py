@@ -6,6 +6,7 @@ import torch.nn as nn
 
 
 class ConvolutionalBlock(nn.Module):
+    # Code is adapted from: https://github.com/fepegar/unet/blob/master/unet/conv.py#L6
     def __init__(
         self,
         dimensions: int,

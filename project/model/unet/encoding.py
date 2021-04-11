@@ -1,4 +1,4 @@
-# Some code is adapted from: https://github.com/fepegar/unet/tree/master/unet
+# Code is adapted from: https://github.com/fepegar/unet/tree/master/unet
 
 from typing import Optional, List
 import torch.nn as nn
@@ -7,6 +7,7 @@ import torch.nn.functional as F
 
 
 class Encoder(nn.Module):
+    # Code is adapted from: https://github.com/fepegar/unet/blob/master/unet/encoding.py#L6
     def __init__(
         self,
         in_channels: int,
@@ -52,6 +53,7 @@ class Encoder(nn.Module):
             self.out_channels = self.encoding_blocks[-1].out_channels
 
     def forward(self, x):
+        # Code is adapted from: https://github.com/fepegar/unet/blob/master/unet/encoding.py#L55
         skip_connections = []
         # nn.ModuleList need to iterate!!!!
         for encoding_block in self.encoding_blocks:
@@ -61,6 +63,7 @@ class Encoder(nn.Module):
 
 
 class EncodingBlock(nn.Module):
+    # Code is adapted from: https://github.com/fepegar/unet/blob/master/unet/encoding.py#L67
     def __init__(
         self,
         in_channels: int,
@@ -131,6 +134,7 @@ class EncodingBlock(nn.Module):
         self.conv_blocks = nn.Sequential(*conv_blocks)
 
     def forward(self, x):
+        # Code is adapted from: https://github.com/fepegar/unet/blob/master/unet/encoding.py#L141
         if self.residual:
             residual_layer = self.conv_residual(x)
             x = self.conv_blocks(x)
@@ -152,6 +156,7 @@ def get_downsampling_maxpooling_layer(
     kernel_size: int = 2,
     stride: int = 2,
 ):
+# Code is adapted from: https://github.com/fepegar/unet/blob/master/unet/encoding.py#L162
     class_name = "{}Pool{}d".format(pooling_type.capitalize(), dimensions)
     class_ = getattr(nn, class_name)
     return class_(kernel_size)

@@ -42,24 +42,7 @@ to 128x128x128 for each tasks. Batch size was 3 in application 1,
 and 1 in applications 2 and 3.
 
 ## Results
-<center>
-    <img style="border-radius: 0.3125em;
-    box-shadow: 0 2px 4px 0 rgba(34,36,38,.12),0 2px 10px 0 rgba(34,36,38,.08);" 
-    src="这里输入图片地址">
-    <br>
-    <div style="color:orange; border-bottom: 1px solid #d9d9d9;
-    display: inline-block;
-    color: #999;
-    padding: 2px;">Qualitative Results</div>
-</center>
-
-<center>
-    <img style="border-radius: 0.3125em;
-    box-shadow: 0 2px 4px 0 rgba(34,36,38,.12),0 2px 10px 0 rgba(34,36,38,.08);" 
-    src="这里输入图片地址">
-    <br>
-    <div style="color:orange; border-bottom: 1px solid #d9d9d9;
-    display: inline-block;
-    color: #999;
-    padding: 2px;">Quantitative Results</div>
-</center>
+### Qualitative Results
+![](figures/qualitative_results.png)
+### Quantitative Results
+![](figures/quantitative_results.png)

@@ -1,4 +1,4 @@
-# Some code is adapted from: https://github.com/fepegar/unet/tree/master/unet
+# The architecture of the U-Net code is adapted from: https://github.com/fepegar/unet/tree/master/unet
 
 """Main module."""
 
@@ -11,6 +11,7 @@ from .conv import ConvolutionalBlock
 
 
 class UNet(nn.Module):
+    # Some code is adapted from: https://github.com/fepegar/unet/blob/master/unet/unet.py
     def __init__(
         self,
         in_channels: int,
@@ -89,6 +90,7 @@ class UNet(nn.Module):
         self.sigmoid = nn.Sigmoid()
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
+        # Some code is adapted from: https://github.com/fepegar/unet/blob/master/unet/unet.py#L119
         skip_connections, encoding = self.encoder(x)
         x = self.bottom_block(encoding)
         x = self.decoder(skip_connections, x)
@@ -100,6 +102,7 @@ class UNet(nn.Module):
 
 
 class UNet2D(UNet):
+    # Code is adapted from: https://github.com/fepegar/unet/blob/master/unet/unet.py#L128
     def __init__(self, *args, **user_kwargs):
         kwargs = {}
         kwargs["dimensions"] = 2
@@ -110,6 +113,7 @@ class UNet2D(UNet):
 
 
 class UNet3D(UNet):
+    # Code is adapted from: https://github.com/fepegar/unet/blob/master/unet/unet.py#L138
     def __init__(self, *args, **user_kwargs):
         kwargs = {}
         kwargs["dimensions"] = 3

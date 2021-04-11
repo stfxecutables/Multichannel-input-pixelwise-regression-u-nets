@@ -75,6 +75,7 @@ class BrainSlices:
         self.shape = np.array(self.target_img.shape)
 
     def get_slice(self, input: np.ndarray, i: int, j: int, k: int):
+        # Some code is adapted from: https://github.com/DM-Berger/unet-learn/blob/6dc108a9a6f49c6d6a50cd29d30eac4f7275582e/src/lightning/log.py
         return [
             (input[i // 2, ...], input[i, ...], input[i + i // 2, ...]),
             (input[:, j // 2, ...], input[:, j, ...], input[:, j + j // 2, ...]),

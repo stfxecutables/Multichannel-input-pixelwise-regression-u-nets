@@ -54,7 +54,6 @@ def get_logger(logdir: Path) -> TensorBoardLogger:
     return TensorBoardLogger(str(logdir), name="unet")
 
 
-# https://www.tensorflow.org/tensorboard/image_summaries#logging_arbitrary_image_data
 class BrainSlices:
     def __init__(
         self,
@@ -65,11 +64,20 @@ class BrainSlices:
         input_img_type: str,
         target_img_type: str,
     ):
+    # Some code is adapted from: https://github.com/fepegar/unet/blob/master/unet/conv.py#L78
         self.lightning = lightning
-        self.input_img: ndarray = img.cpu().detach().numpy().squeeze() if torch.is_tensor(img) else img
-        self.target_img: ndarray = target.cpu().detach().numpy().squeeze() if torch.is_tensor(target) else target
+        self.input_img: ndarray = (
+            img.cpu().detach().numpy().squeeze() if torch.is_tensor(img) else img
+        )
+        self.target_img: ndarray = (
+            target.cpu().detach().numpy().squeeze()
+            if torch.is_tensor(target)
+            else target
+        )
         self.predict_img: ndarray = make_imgs(
-            prediction.cpu().detach().numpy().squeeze() if torch.is_tensor(prediction) else prediction
+            prediction.cpu().detach().numpy().squeeze()
+            if torch.is_tensor(prediction)
+            else prediction
         )
         self.input_img_type = input_img_type
         self.target_img_type = target_img_type
@@ -127,14 +135,25 @@ class BrainSlices:
                         self.get_slice(self.target_img, i, j, k),
                         self.get_slice(self.predict_img, i, j, k),
                     ]
-        self.title = ["input image: M12", "input image: M06", "input image: SC", "target image: M24", "predict image"]
+        self.title = [
+            "input image: M12",
+            "input image: M06",
+            "input image: SC",
+            "target image: M24",
+            "predict image",
+        ]
         self.shape = np.array(self.input_img.shape)
 
     def get_slice(self, input: np.ndarray, i: int, j: int, k: int):
+        # Some code is adapted from: https://github.com/DM-Berger/unet-learn/blob/6dc108a9a6f49c6d6a50cd29d30eac4f7275582e/src/lightning/log.py
         return [
             (input[i // 2, ...], input[i, ...], input[i + i // 2, ...]),
             (input[:, j // 2, ...], input[:, j, ...], input[:, j + j // 2, ...]),
-            (input[:, :, k // 2, ...], input[:, :, k, ...], input[:, :, k + k // 2, ...]),
+            (
+                input[:, :, k // 2, ...],
+                input[:, :, k, ...],
+                input[:, :, k + k // 2, ...],
+            ),
         ]
 
     # def get_slice(self, input: np.ndarray, i: int, j: int, k: int):
@@ -207,117 +226,6 @@ class BrainSlices:
         # https://github.com/pytorch/pytorch/blob/780fa2b4892512b82c8c0aaba472551bd0ce0fad/torch/utils/tensorboard/_utils.py#L5
         # then use logger.experiment.add_image(summary, image)
 
-    # code is borrowed from: https://github.com/DM-Berger/autocrop/blob/master/autocrop/visualize.py#L125
-    def animate_masks(
-        self,
-        dpi: int = 100,
-        n_frames: int = 128,
-        fig_title: str = None,
-        outfile: Path = None,
-    ) -> None:
-        def get_slice(img: ndarray, ratio: float) -> ndarray:
-            """Returns eig_img, raw_img"""
-
-            if ratio < 0 or ratio > 1:
-                raise ValueError("Invalid slice position")
-            if len(img.shape) == 3:
-                x_max, y_max, z_max = np.array(img.shape, dtype=int)
-                x, y, z = np.array(np.floor(np.array(img.shape) * ratio), dtype=int)
-            elif len(img.shape) == 4:
-                x_max, y_max, z_max, _ = np.array(img.shape, dtype=int)
-                x, y, z = np.array(np.floor(np.array(img.shape[:-1]) * ratio), dtype=int)
-            x = int(10 + ratio * (x_max - 20))  # make x go from 10:-10 of x_max
-            y = int(10 + ratio * (y_max - 20))  # make x go from 10:-10 of x_max
-            x = x - 1 if x == x_max else x
-            y = y - 1 if y == y_max else y
-            z = z - 1 if z == z_max else z
-            img_np = np.concatenate([img[x, :, :], img[:, y, :], img[:, :, z]], axis=1)
-            return img_np
-
-        def init_frame(img: ndarray, ratio: float, fig: Figure, ax: Axes, title) -> Tuple[AxesImage, Colorbar, Text]:
-            image_slice = get_slice(img, ratio=ratio)
-            # the bigger alpha, the image would become more black
-            true_args = dict(vmin=0, vmax=255, cmap="bone", alpha=0.8)
-
-            im = ax.imshow(image_slice, animated=True, **true_args)
-            # im = ax.imshow(image_slice, animated=True)
-            ax.set_xticks([])
-            ax.set_yticks([])
-            title = ax.set_title(title)
-            cb = fig.colorbar(im, ax=ax)
-            return im, cb, title
-
-        def update_axis(img: ndarray, ratio: float, im: AxesImage) -> AxesImage:
-            image_slice = get_slice(img, ratio=ratio)
-            # mask_slice = get_slice(mask, ratio=ratio)
-
-            # vn, vm = get_vranges()
-            im.set_data(image_slice)
-            # im.set_data(mask_slice)
-            # im.set_clim(vn, vm)
-            # we don't have to update cb, it is linked
-            return im
-
-        # owe a lot to below for animating the colorbars
-        # https://stackoverflow.com/questions/39472017/how-to-animate-the-colorbar-in-matplotlib
-        def init() -> Tuple[Figure, Axes, List[AxesImage], List[Colorbar]]:
-            fig: Figure
-            axes: Axes
-            fig, axes = plt.subplots(nrows=3, ncols=1, sharex=False, sharey=False)  # 3
-
-            ims: List[AxesImage] = []
-            cbs: List[Colorbar] = []
-
-            for ax, img, mask, title in zip(axes.flat, self.scale_imgs, self.masks, self.mask_video_names):
-                im, cb, title = init_frame(img=img, ratio=0.0, fig=fig, ax=ax, title=title)
-                ims.append(im)
-                cbs.append(cb)
-
-            if fig_title is not None:
-                fig.suptitle(fig_title)
-            fig.tight_layout(h_pad=0)
-            fig.set_size_inches(w=12, h=10)  # The width of the entire image displayed
-            fig.subplots_adjust(hspace=0.2, wspace=0.0)
-            return fig, axes, ims, cbs
-
-        N_FRAMES = n_frames
-        ratios = np.linspace(0, 1, num=N_FRAMES)
-
-        fig, axes, ims, cbs = init()
-
-        # awkward, but we need this defined after to close over the above variables
-        def animate(f: int) -> Any:
-            ratio = ratios[f]
-            updated = []
-            for im, img, mask in zip(ims, self.scale_imgs, self.masks):
-                updated.append(update_axis(img=img, ratio=ratio, im=im))
-            return updated
-
-        ani = animation.FuncAnimation(
-            fig=fig,
-            func=animate,
-            frames=N_FRAMES,
-            blit=False,
-            interval=24000 / N_FRAMES,
-            repeat_delay=100 if outfile is None else None,
-        )
-
-        if outfile is None:
-            plt.show()
-        else:
-            pbar = tqdm(total=100, position=1, desc="mp4")
-
-            def prog_logger(current_frame: int, total_frames: int = N_FRAMES) -> Any:
-                if (current_frame % (total_frames // 10)) == 0 and (current_frame != 0):
-                    pbar.update(10)
-                # tqdm.write("Done task %i" % (100 * current_frame / total_frames))
-                #     print("Saving... {:2.1f}%".format(100 * current_frame / total_frames))
-
-            # writervideo = animation.FFMpegWriter(fps=60)
-            ani.save(outfile, codec="h264", dpi=dpi, progress_callback=prog_logger)
-            # ani.save(outfile, progress_callback=prog_logger, writer=writervideo)
-            pbar.close()
-
 
 """
 Actual methods on logger.experiment can be found here!!!
@@ -336,7 +244,14 @@ def log_all_info(
     input_img_type: str,
     target_img_type: str,
 ) -> None:
-    brainSlice = BrainSlices(module, img, target, preb, input_img_type=input_img_type, target_img_type=target_img_type)
+    brainSlice = BrainSlices(
+        module,
+        img,
+        target,
+        preb,
+        input_img_type=input_img_type,
+        target_img_type=target_img_type,
+    )
     fig = brainSlice.plot()
 
     # fig.savefig("test.png")

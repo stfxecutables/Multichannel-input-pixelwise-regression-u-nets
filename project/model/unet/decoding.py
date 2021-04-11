@@ -20,6 +20,7 @@ UPSAMPLING_MODES = (
 
 
 class Decoder(nn.Module):
+    # Code is adapted from: https://github.com/fepegar/unet/blob/master/unet/decoding.py#L19
     def __init__(
         self,
         in_channels_skip_connection: int,
@@ -62,6 +63,7 @@ class Decoder(nn.Module):
 
 
 class DecodingBlock(nn.Module):
+    # Code is adapted from: https://github.com/fepegar/unet/blob/master/unet/decoding.py#L65
     def __init__(
         self,
         in_channels_skip_connection: int,
@@ -138,6 +140,7 @@ class DecodingBlock(nn.Module):
             )
 
     def forward(self, skip_connection: Tensor, x: Tensor):
+        # Code is adapted from: https://github.com/fepegar/unet/blob/master/unet/decoding.py#L128
         x = self.upsample(x)
         # print(f"x from the upsample shape: {x.shape}")
         # if self.all_size_input:
@@ -173,6 +176,7 @@ class DecodingBlock(nn.Module):
 
 
 def get_upsampling_layer(upsampling_type: str) -> nn.Upsample:
+    # Code is adapted from: https://github.com/fepegar/unet/blob/master/unet/decoding.py#L154
     if upsampling_type not in UPSAMPLING_MODES:
         message = 'Upsampling type is "{}"' " but should be one of the following: {}"
         message = message.format(upsampling_type, UPSAMPLING_MODES)
@@ -182,6 +186,7 @@ def get_upsampling_layer(upsampling_type: str) -> nn.Upsample:
 
 
 def get_conv_transpose_layer(dimensions, in_channels, out_channels):
+    # Code is adapted from: https://github.com/fepegar/unet/blob/master/unet/decoding.py#L170
     class_name = "ConvTranspose{}d".format(dimensions)
     conv_class = getattr(nn, class_name)
     conv_layer = conv_class(in_channels, out_channels, kernel_size=5, stride=2, padding=2, output_padding=1)
@@ -189,6 +194,7 @@ def get_conv_transpose_layer(dimensions, in_channels, out_channels):
 
 
 def fix_upsampling_type(upsampling_type: str, dimensions: int):
+    # Code is from: https://github.com/fepegar/unet/blob/master/unet/decoding.py#L177
     if upsampling_type == "linear":
         if dimensions == 2:
             upsampling_type = "bilinear"
