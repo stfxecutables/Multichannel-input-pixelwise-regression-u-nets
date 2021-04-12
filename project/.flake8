@@ -1,0 +1,8 @@
+[flake8]
+# ignored rules, see https://lintlyci.github.io/Flake8Rules/
+# E203: Whitespace before ':'
+# E302: Expected 2 blank lines, found 0
+# E731: Do not assign a lambda expression, use a def
+# W503: Line break occurred before a binary operator
+ignore = E203,E302,E731,W503
+max-line-length = 100

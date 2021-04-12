@@ -1,0 +1,9 @@
+[tool.black]
+line-length = 100
+
+[tool.isort]
+profile = 'black'
+skip_gitignore = false
+line_length = 100
+atomic = true
+sections = ['FUTURE', 'STDLIB', 'THIRDPARTY', 'LOCALFOLDER', 'FIRSTPARTY']
