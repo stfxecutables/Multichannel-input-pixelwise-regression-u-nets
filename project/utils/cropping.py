@@ -1,51 +1,30 @@
 """
-using Kmeans to make the threshold and do crop on the MR image
-Some code are from https://github.com/MIC-DKFZ/nnUNet/blob/master/nnunet/preprocessing/cropping.py
+Rather than re-invent the wheel here, we use heavily simplified versions of some of the automatic
+cropping implementations available from the nnU-Net code for the paper:
+
+Isensee, F., Jaeger, P. F., Kohl, S. A., Petersen, J., & Maier-Hein, K. H. (2020). nnU-Net: a
+self-configuring method for deep learning-based biomedical image segmentation. Nature Methods, 1-9.
+
+The code below greatly compacts and simplifies the functions found in
+https://github.com/MIC-DKFZ/nnUNet/blob/master/nnunet/preprocessing/cropping.py
 """
 
 import numpy as np
-from typing import List
-
-
-def create_nonzero_mask(data: np.ndarray) -> np.ndarray:
-    # Code is adapted from: https://github.com/MIC-DKFZ/nnUNet/blob/master/nnunet/preprocessing/cropping.py#L23
-    from scipy.ndimage import binary_fill_holes
-
-    assert len(data.shape) == 3, "data must have shape (C, X, Y)"
-    nonzero_mask = np.zeros(data.shape, dtype=bool)
-    this_mask = data > 0
-    nonzero_mask = nonzero_mask | this_mask
-    nonzero_mask = binary_fill_holes(nonzero_mask)
-    return nonzero_mask
-
-
-def get_bbox_from_mask(mask: np.ndarray, outside_value: int = 0) -> List[List[int]]:
-    # Code is adapted from: https://github.com/MIC-DKFZ/nnUNet/blob/master/nnunet/preprocessing/cropping.py#L34
-    mask_voxel_coords = np.where(mask != outside_value)
-    minzidx = int(np.min(mask_voxel_coords[0]))
-    maxzidx = int(np.max(mask_voxel_coords[0])) + 1
-    minxidx = int(np.min(mask_voxel_coords[1]))
-    maxxidx = int(np.max(mask_voxel_coords[1])) + 1
-    minyidx = int(np.min(mask_voxel_coords[2]))
-    maxyidx = int(np.max(mask_voxel_coords[2])) + 1
-    return [[minzidx, maxzidx], [minxidx, maxxidx], [minyidx, maxyidx]]
-
-
-def crop_to_bbox(img: np.ndarray, bbox: List[List[int]]) -> np.ndarray:
-    # Code is adapted from: https://github.com/MIC-DKFZ/nnUNet/blob/master/nnunet/preprocessing/cropping.py#L45
-    assert len(img.shape) == 3, "only supports 3d images"
-    resizer = (
-        slice(bbox[0][0], bbox[0][1]),
-        slice(bbox[1][0], bbox[1][1]),
-        slice(bbox[2][0], bbox[2][1]),
-    )
-    return img[resizer]
+from scipy.ndimage import binary_fill_holes
 
 
 def crop_to_nonzero(img: np.ndarray) -> np.ndarray:
-    # Code is adapted from: https://github.com/MIC-DKFZ/nnUNet/blob/master/nnunet/preprocessing/cropping.py#L84
-    nonzero_mask = create_nonzero_mask(img)
-    bbox = get_bbox_from_mask(nonzero_mask, 0)
+    assert len(img.shape) == 3, "Data must have shape (channels, width, height)"
+    # fill holes to smooth masks
+    mask = np.zeros(img.shape, dtype=bool)
+    nonzero = img > 0
+    mask = mask | nonzero
+    filled = binary_fill_holes(mask)
 
-    img = crop_to_bbox(img, bbox)
-    return img
+    # crop to bounds of filled mask
+    non_nulls = np.where(filled != 0)
+    ch_min, ch_max = int(np.min(non_nulls[0])), int(np.max(non_nulls[0])) + 1
+    x_min, x_max = int(np.min(non_nulls[1])), int(np.max(non_nulls[1])) + 1
+    y_min, y_max = int(np.min(non_nulls[2])), int(np.max(non_nulls[2])) + 1
+    slicer = (slice(ch_min, ch_max), slice(x_min, x_max), slice(y_min, y_max))
+    return img[slicer]

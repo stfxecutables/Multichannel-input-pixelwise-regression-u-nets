@@ -3,7 +3,6 @@ from argparse import ArgumentParser, Namespace
 from pathlib import Path
 
 import pytorch_lightning as pl
-from torch.utils import data
 from utils.const import COMPUTECANADA
 from lig_module.data_model import DataModule
 from lig_module.data_model_dti import DataModuleDiffusion
@@ -15,11 +14,7 @@ from lig_module.lig_model_longitudinal import LitModelLongitudinal
 from lig_module.lig_model_2d_dti import LitModel2DDiffusion
 
 from pytorch_lightning import Trainer, loggers
-from pytorch_lightning.callbacks import (
-    EarlyStopping,
-    LearningRateMonitor,
-    ModelCheckpoint,
-)
+from pytorch_lightning.callbacks import LearningRateMonitor, ModelCheckpoint
 
 
 def main(hparams: Namespace) -> None:
@@ -32,7 +27,7 @@ def main(hparams: Namespace) -> None:
         default_root_dir = cur_path
         checkpoint_file = (
             Path(__file__).resolve().parent
-            / "checkpoint/{epoch}-{val_loss:0.5f}-{val_MAE:0.5f}-{val_MSE:0.5f}-{val_SSIM:0.5f}-{val_PSNR:0.5f}"
+            / "checkpoint/{epoch}-{val_loss:0.5f}-{val_MAE:0.5f}-{val_MSE:0.5f}-{val_SSIM:0.5f}-{val_PSNR:0.5f}"  # noqa
         )
         if not os.path.exists(Path(__file__).resolve().parent / "checkpoint"):
             os.mkdir(Path(__file__).resolve().parent / "checkpoint")
@@ -53,7 +48,7 @@ def main(hparams: Namespace) -> None:
 
     # After training finishes, use best_model_path to retrieve the path to the best
     # checkpoint file and best_model_score to retrieve its score.
-    checkpoint_callback = ModelCheckpoint(
+    checkpoint_callback = ModelCheckpoint(  # type: ignore
         filepath=str(checkpoint_file),
         monitor="val_loss",
         save_top_k=1,
@@ -132,9 +127,7 @@ def main(hparams: Namespace) -> None:
 if __name__ == "__main__":  # pragma: no cover
     parser = ArgumentParser(description="Trainer args", add_help=False)
     parser.add_argument("--gpus", type=int, default=1, help="how many gpus")
-    parser.add_argument(
-        "--batch_size", type=int, default=1, help="Batch size", dest="batch_size"
-    )
+    parser.add_argument("--batch_size", type=int, default=1, help="Batch size", dest="batch_size")
     parser.add_argument(
         "--tensor_board_logger",
         dest="TensorBoardLogger",
@@ -169,9 +162,7 @@ if __name__ == "__main__":  # pragma: no cover
         ],
         default="diffusion_adc",
     )
-    parser.add_argument(
-        "--checkpoint_file", type=str, help="resume from checkpoint file"
-    )
+    parser.add_argument("--checkpoint_file", type=str, help="resume from checkpoint file")
     parser = LitModel.add_model_specific_args(parser)
     hparams = parser.parse_args()
 

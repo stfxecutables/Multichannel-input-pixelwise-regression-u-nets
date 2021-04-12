@@ -5,40 +5,16 @@ https://github.com/fepegar/miccai-educational-challenge-2019/blob/master/visuali
 
 import matplotlib.pyplot as plt
 import torch
-from matplotlib import animation
-from matplotlib.colorbar import Colorbar
-from matplotlib.image import AxesImage
-from matplotlib.pyplot import Axes, Figure
-from matplotlib.text import Text
-from numpy import ndarray
+from matplotlib.pyplot import Figure
 import numpy as np
 
-from collections import OrderedDict
 from numpy import ndarray
-from matplotlib.pyplot import Axes, Figure
 from pathlib import Path
 from pytorch_lightning.loggers import TensorBoardLogger
 from torch import Tensor
-from typing import Any, Dict, List, Tuple, Union, Optional
+from typing import Any, List, Tuple, Union
 from pytorch_lightning.core.lightning import LightningModule
 import matplotlib.gridspec as gridspec
-
-
-"""
-For TensorBoard logging usage, see:
-https://www.tensorflow.org/api_docs/python/tf/summary
-For Lightning documentation / examples, see:
-https://pytorch-lightning.readthedocs.io/en/latest/experiment_logging.html#tensorboard
-NOTE: The Lightning documentation here is not obvious to newcomers. However,
-`self.logger` returns the Torch TensorBoardLogger object (generally quite
-useless) and `self.logger.experiment` returns the actual TensorFlow
-SummaryWriter object (e.g. with all the methods you actually care about)
-For the Lightning methods to access the TensorBoard .summary() features, see
-https://pytorch-lightning.readthedocs.io/en/latest/api/pytorch_lightning.loggers.html#pytorch_lightning.loggers.TensorBoardLogger
-**kwargs for SummaryWriter constructor defined at
-https://www.tensorflow.org/api_docs/python/tf/summary/create_file_writer
-^^ these args look largely like things we don't care about ^^
-"""
 
 
 def make_imgs(img: ndarray, imin: Any = None, imax: Any = None) -> ndarray:
@@ -58,21 +34,19 @@ class BrainSlices:
     def __init__(
         self,
         lightning: LightningModule,
-        img: Optional[Tensor],
+        img: Tensor,
         target: Tensor,
         prediction: Tensor,
         input_img_type: str,
         target_img_type: str,
     ):
-    # Some code is adapted from: https://github.com/fepegar/unet/blob/master/unet/conv.py#L78
+        # Some code is adapted from: https://github.com/fepegar/unet/blob/master/unet/conv.py#L78
         self.lightning = lightning
         self.input_img: ndarray = (
             img.cpu().detach().numpy().squeeze() if torch.is_tensor(img) else img
         )
         self.target_img: ndarray = (
-            target.cpu().detach().numpy().squeeze()
-            if torch.is_tensor(target)
-            else target
+            target.cpu().detach().numpy().squeeze() if torch.is_tensor(target) else target
         )
         self.predict_img: ndarray = make_imgs(
             prediction.cpu().detach().numpy().squeeze()
@@ -82,7 +56,7 @@ class BrainSlices:
         self.input_img_type = input_img_type
         self.target_img_type = target_img_type
 
-        if self.lightning.hparams.task == "t1t2":
+        if self.lightning.hparams.task == "t1t2":  # type: ignore
             if len(self.input_img.shape) == 3:
                 si, sj, sk = self.input_img.shape
                 i = si // 2
@@ -104,7 +78,7 @@ class BrainSlices:
                     self.get_slice(self.target_img, i, j, k),
                     self.get_slice(self.predict_img, i, j, k),
                 ]
-        elif self.lightning.hparams.task == "longitudinal":
+        elif self.lightning.hparams.task == "longitudinal":  # type: ignore
             if len(self.input_img.shape) == 3:
                 si, sj, sk = self.input_img.shape
                 i = si // 2
@@ -144,20 +118,12 @@ class BrainSlices:
         ]
         self.shape = np.array(self.input_img.shape)
 
-    def get_slice(self, input: np.ndarray, i: int, j: int, k: int):
-        # Some code is adapted from: https://github.com/DM-Berger/unet-learn/blob/6dc108a9a6f49c6d6a50cd29d30eac4f7275582e/src/lightning/log.py
+    def get_slice(self, input: ndarray, i: int, j: int, k: int) -> List[Tuple[ndarray, ...]]:
         return [
             (input[i // 2, ...], input[i, ...], input[i + i // 2, ...]),
             (input[:, j // 2, ...], input[:, j, ...], input[:, j + j // 2, ...]),
-            (
-                input[:, :, k // 2, ...],
-                input[:, :, k, ...],
-                input[:, :, k + k // 2, ...],
-            ),
+            (input[:, :, k // 2, ...], input[:, :, k, ...], input[:, :, k + k // 2, ...]),
         ]
-
-    # def get_slice(self, input: np.ndarray, i: int, j: int, k: int):
-    #     return [input[i, ...], input[:, j, ...], input[:, :, k, ...]]
 
     def plot(self) -> Figure:
         nrows, ncols = len(self.slices), 3  # one row for each slice position
@@ -174,23 +140,23 @@ class BrainSlices:
             axes = ax1, ax2, ax3
             self.plot_row(self.slices[i], axes)
             for axis in axes:
-                if self.lightning.hparams.task == "t1t2":
+                if self.lightning.hparams.task == "t1t2":  # type: ignore
                     if i == 0:
                         axis.set_title(f"input image: {self.input_img_type}")
                         continue
                     if len(self.slices) == 4:
                         if i == 1:
-                            axis.set_title(f"input image: flair")
+                            axis.set_title("input image: flair")
                         elif i == 2:
                             axis.set_title(f"target image: {self.target_img_type}")
                         else:
-                            axis.set_title(f"predict image")
+                            axis.set_title("predict image")
                     else:
                         if i == 1:
                             axis.set_title(f"target image: {self.target_img_type}")
                         else:
-                            axis.set_title(f"predict image")
-                elif self.lightning.hparams.task == "longitudinal":
+                            axis.set_title("predict image")
+                elif self.lightning.hparams.task == "longitudinal":  # type: ignore
                     if i == 0:
                         axis.set_title(self.title[0])
                     elif i == (len(self.slices) - 1):
@@ -218,7 +184,9 @@ class BrainSlices:
 
     def log(self, state: str, fig: Figure, loss: float, batch_idx: int) -> None:
         logger = self.lightning.logger
-        summary = f"{state}-Epoch:{self.lightning.current_epoch + 1}-batch:{batch_idx}-loss:{loss:0.5e}"
+        summary = (
+            f"{state}-Epoch:{self.lightning.current_epoch + 1}-batch:{batch_idx}-loss:{loss:0.5e}"
+        )
         logger.experiment.add_figure(summary, fig, close=True)
         # if you want to manually intervene, look at the code at
         # https://github.com/pytorch/pytorch/blob/master/torch/utils/tensorboard/_utils.py
@@ -245,14 +213,8 @@ def log_all_info(
     target_img_type: str,
 ) -> None:
     brainSlice = BrainSlices(
-        module,
-        img,
-        target,
-        preb,
-        input_img_type=input_img_type,
-        target_img_type=target_img_type,
+        module, img, target, preb, input_img_type=input_img_type, target_img_type=target_img_type
     )
     fig = brainSlice.plot()
-
     # fig.savefig("test.png")
     brainSlice.log(state, fig, loss, batch_idx)

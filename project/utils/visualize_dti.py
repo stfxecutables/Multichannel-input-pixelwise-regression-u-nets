@@ -5,40 +5,16 @@ https://github.com/fepegar/miccai-educational-challenge-2019/blob/master/visuali
 
 import matplotlib.pyplot as plt
 import torch
-from matplotlib import animation
-from matplotlib.colorbar import Colorbar
-from matplotlib.image import AxesImage
-from matplotlib.pyplot import Axes, Figure
-from matplotlib.text import Text
+from matplotlib.pyplot import Figure
 from numpy import ndarray
 import numpy as np
 
-from collections import OrderedDict
-from numpy import ndarray
-from matplotlib.pyplot import Axes, Figure
 from pathlib import Path
 from pytorch_lightning.loggers import TensorBoardLogger
 from torch import Tensor
 from typing import Any, Dict, List, Tuple, Union, Optional
 from pytorch_lightning.core.lightning import LightningModule
 import matplotlib.gridspec as gridspec
-
-
-"""
-For TensorBoard logging usage, see:
-https://www.tensorflow.org/api_docs/python/tf/summary
-For Lightning documentation / examples, see:
-https://pytorch-lightning.readthedocs.io/en/latest/experiment_logging.html#tensorboard
-NOTE: The Lightning documentation here is not obvious to newcomers. However,
-`self.logger` returns the Torch TensorBoardLogger object (generally quite
-useless) and `self.logger.experiment` returns the actual TensorFlow
-SummaryWriter object (e.g. with all the methods you actually care about)
-For the Lightning methods to access the TensorBoard .summary() features, see
-https://pytorch-lightning.readthedocs.io/en/latest/api/pytorch_lightning.loggers.html#pytorch_lightning.loggers.TensorBoardLogger
-**kwargs for SummaryWriter constructor defined at
-https://www.tensorflow.org/api_docs/python/tf/summary/create_file_writer
-^^ these args look largely like things we don't care about ^^
-"""
 
 
 def make_imgs(img: ndarray, imin: Any = None, imax: Any = None) -> ndarray:
@@ -54,13 +30,16 @@ def get_logger(logdir: Path) -> TensorBoardLogger:
     return TensorBoardLogger(str(logdir), name="unet")
 
 
-# https://www.tensorflow.org/tensorboard/image_summaries#logging_arbitrary_image_data
 class BrainSlices:
     def __init__(self, lightning: LightningModule, target: Tensor, prediction: Tensor):
         self.lightning = lightning
-        self.target_img: ndarray = target.cpu().detach().numpy().squeeze() if torch.is_tensor(target) else target
+        self.target_img: ndarray = target.cpu().detach().numpy().squeeze() if torch.is_tensor(
+            target
+        ) else target
         self.predict_img: ndarray = (
-            prediction.cpu().detach().numpy().squeeze() if torch.is_tensor(prediction) else prediction
+            prediction.cpu().detach().numpy().squeeze()
+            if torch.is_tensor(prediction)
+            else prediction
         )
 
         si, sj, sk = self.target_img.shape[:3]
@@ -74,16 +53,12 @@ class BrainSlices:
 
         self.shape = np.array(self.target_img.shape)
 
-    def get_slice(self, input: np.ndarray, i: int, j: int, k: int):
-        # Some code is adapted from: https://github.com/DM-Berger/unet-learn/blob/6dc108a9a6f49c6d6a50cd29d30eac4f7275582e/src/lightning/log.py
+    def get_slice(self, input: ndarray, i: int, j: int, k: int) -> List[Tuple[ndarray, ...]]:
         return [
             (input[i // 2, ...], input[i, ...], input[i + i // 2, ...]),
             (input[:, j // 2, ...], input[:, j, ...], input[:, j + j // 2, ...]),
             (input[:, :, k // 2, ...], input[:, :, k, ...], input[:, :, k + k // 2, ...]),
         ]
-
-    # def get_slice(self, input: np.ndarray, i: int, j: int, k: int):
-    #     return [input[i, ...], input[:, j, ...], input[:, :, k, ...]]
 
     def plot(self) -> Figure:
         nrows, ncols = 2, 3
@@ -119,19 +94,15 @@ class BrainSlices:
 
     def log(self, state: str, fig: Figure, loss: float, batch_idx: int) -> None:
         logger = self.lightning.logger
-        summary = f"{state}-Epoch:{self.lightning.current_epoch + 1}-batch:{batch_idx}-loss:{loss:0.5e}"
+        summary = (
+            f"{state}-Epoch:{self.lightning.current_epoch + 1}-batch:{batch_idx}-loss:{loss:0.5e}"
+        )
         logger.experiment.add_figure(summary, fig, close=True)
         # if you want to manually intervene, look at the code at
         # https://github.com/pytorch/pytorch/blob/master/torch/utils/tensorboard/_utils.py
         # permalink to version:
         # https://github.com/pytorch/pytorch/blob/780fa2b4892512b82c8c0aaba472551bd0ce0fad/torch/utils/tensorboard/_utils.py#L5
         # then use logger.experiment.add_image(summary, image)
-
-
-"""
-Actual methods on logger.experiment can be found here!!!
-https://pytorch.org/docs/stable/tensorboard.html
-"""
 
 
 def log_all_info(
@@ -144,6 +115,4 @@ def log_all_info(
 ) -> None:
     brainSlice = BrainSlices(module, target, preb)
     fig = brainSlice.plot()
-
-    # fig.savefig("/home/jueqi/projects/def-jlevman/jueqi/rUnet/3/tmp.png")
     brainSlice.log(state, fig, loss, batch_idx)

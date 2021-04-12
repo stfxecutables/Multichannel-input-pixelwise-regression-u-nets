@@ -5,14 +5,10 @@ from monai.transforms import (
     ToTensor,
     Resize,
     ToTensord,
-    RandFlipd,
     SpatialPad,
     RandAffined,
-    RandScaleIntensityd,
-    RandShiftIntensityd,
 )
 from monai.transforms.compose import Transform
-from monai.transforms.intensity.array import ScaleIntensity
 from utils.cropping import crop_to_nonzero
 from utils.const import IMAGESIZE
 
@@ -28,9 +24,7 @@ class Crop(Transform):
 
 
 class Unsqueeze(Transform):
-    def __init__(
-        self,
-    ) -> None:
+    def __init__(self) -> None:
         pass
 
     def __call__(self, img: np.ndarray) -> np.ndarray:
@@ -38,9 +32,7 @@ class Unsqueeze(Transform):
 
 
 class Squeeze(Transform):
-    def __init__(
-        self,
-    ) -> None:
+    def __init__(self) -> None:
         pass
 
     def __call__(self, img: np.ndarray) -> np.ndarray:
@@ -48,9 +40,7 @@ class Squeeze(Transform):
 
 
 class Transpose(Transform):
-    def __init__(
-        self,
-    ) -> None:
+    def __init__(self) -> None:
         pass
 
     def __call__(self, img: np.ndarray) -> np.ndarray:
@@ -58,9 +48,7 @@ class Transpose(Transform):
 
 
 class Transpose2DInput(Transform):
-    def __init__(
-        self,
-    ) -> None:
+    def __init__(self) -> None:
         pass
 
     def __call__(self, img: np.ndarray) -> np.ndarray:
@@ -68,28 +56,14 @@ class Transpose2DInput(Transform):
 
 
 class Transpose2DLabel(Transform):
-    def __init__(
-        self,
-    ) -> None:
+    def __init__(self) -> None:
         pass
 
     def __call__(self, img: np.ndarray) -> np.ndarray:
         return np.transpose(img, (2, 0, 1))
 
 
-# class Resize3D(Transform):
-#     def __init__(
-#         self,
-#     ) -> None:
-#         pass
-
-#     def __call__(self, img: np.ndarray) -> np.ndarray:
-#         for slice in img:
-
-#         return img
-
-
-def get_diffusion_preprocess() -> List:
+def get_diffusion_preprocess() -> Compose:
     return Compose(
         [
             NormalizeIntensity(nonzero=True),
@@ -100,7 +74,7 @@ def get_diffusion_preprocess() -> List:
     )
 
 
-def get_diffusion_label_preprocess() -> List:
+def get_diffusion_label_preprocess() -> Compose:
     return Compose(
         [
             NormalizeIntensity(nonzero=True),
@@ -128,15 +102,15 @@ def get_diffusion_transform() -> Compose:
     )
 
 
-def get_2D_diffusion_preprocess() -> List:
+def get_2D_diffusion_preprocess() -> Compose:
     return Compose([NormalizeIntensity(nonzero=True), Transpose2DInput()])
 
 
-def get_2D_diffusion_label_preprocess() -> List:
+def get_2D_diffusion_label_preprocess() -> Compose:
     return Compose([NormalizeIntensity(nonzero=True), Transpose2DLabel()])
 
 
-def get_preprocess(is_label: bool) -> List:
+def get_preprocess(is_label: bool) -> List[Transform]:
     if not is_label:
         return [
             Crop(),
@@ -156,7 +130,7 @@ def get_preprocess(is_label: bool) -> List:
         ]
 
 
-def get_longitudinal_preprocess(is_label: bool) -> List:
+def get_longitudinal_preprocess(is_label: bool) -> List[Transform]:
     # only without cropping, somehow, there is not much left to crop in this dataset...
     if not is_label:
         return [
@@ -176,7 +150,7 @@ def get_longitudinal_preprocess(is_label: bool) -> List:
 
 def get_train_img_transforms() -> Compose:
     preprocess = get_preprocess(is_label=False)
-    train_augmentation = [ToTensor()]
+    train_augmentation: List[Transform] = [ToTensor()]
     return Compose(preprocess + train_augmentation)
 
 
@@ -192,7 +166,7 @@ def get_label_transforms() -> Compose:
 
 def get_longitudinal_train_img_transforms() -> Compose:
     preprocess = get_longitudinal_preprocess(is_label=False)
-    train_augmentation = [ToTensor()]
+    train_augmentation: List[Transform] = [ToTensor()]
     return Compose(preprocess + train_augmentation)
 
 

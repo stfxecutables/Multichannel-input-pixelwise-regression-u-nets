@@ -28,7 +28,7 @@ class LitModel2DDiffusion(pl.LightningModule):
             conv_num_in_layer=[1, 2, 3, 3, 3],
             residual=False,
             out_channels_first_layer=16,
-            kernal_size=5,
+            kernel_size=5,
             normalization=hparams.normalization,
             downsampling_type="max",
             use_sigmoid=False,
