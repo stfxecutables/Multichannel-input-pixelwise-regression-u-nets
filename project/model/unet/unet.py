@@ -45,7 +45,6 @@ class UNet(nn.Module):
             residual=residual,
             kernel_size=kernel_size,
             normalization=normalization,
-            downsampling_type=downsampling_type,
             padding_mode=padding_mode,
             activation=activation,
             use_bias=use_bias,
@@ -56,6 +55,7 @@ class UNet(nn.Module):
             out_channels_first=out_channels_first_layer,
             dimensions=dimensions,
             conv_num_in_layer=conv_num_in_layer,
+            downsampling_type=downsampling_type,
             **shared_options,
         )
 
@@ -67,6 +67,7 @@ class UNet(nn.Module):
             dimensions=dimensions,
             conv_num=conv_num_in_layer[-1],
             num_block=len(conv_num_in_layer),
+            downsampling_type=None,
             **shared_options,
         )
 

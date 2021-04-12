@@ -48,6 +48,7 @@ class Decoder(nn.Module):
         self.out_channels = in_channels_skip_connection * 4
 
     def forward(self, skip_connections: List[Tensor], x: Tensor) -> Tensor:
+        # print(f"x type: {type(x)}, length: {len(x)}")
         zipped = zip(reversed(skip_connections), self.decoding_blocks)
         for skip_connection, decoding_block in zipped:
             x = decoding_block(skip_connection, x)
