@@ -1,9 +1,10 @@
 # Code in this file adapted from: https://github.com/fepegar/unet/blob/master/unet/encoding.py
 
-from typing import Optional, List, Tuple, Dict, Union
+from typing import Dict, List, Optional, Tuple, Union
 
-from torch import Tensor
 import torch.nn as nn
+from torch import Tensor
+
 from .conv import ConvolutionalBlock
 
 

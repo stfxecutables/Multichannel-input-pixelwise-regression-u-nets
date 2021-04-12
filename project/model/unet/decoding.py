@@ -3,8 +3,8 @@
 from typing import Any, Dict, List, Optional, Sequence
 
 import torch
-from torch import Tensor
 import torch.nn as nn
+from torch import Tensor
 
 from .conv import ConvolutionalBlock
 

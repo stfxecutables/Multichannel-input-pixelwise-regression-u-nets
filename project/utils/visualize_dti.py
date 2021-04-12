@@ -3,18 +3,18 @@ https://github.com/DM-Berger/unet-learn/blob/6dc108a9a6f49c6d6a50cd29d30eac4f727
 https://github.com/fepegar/miccai-educational-challenge-2019/blob/master/visualization.py
 """
 
+from pathlib import Path
+from typing import Any, List, Tuple, Union
+
+import matplotlib.gridspec as gridspec
 import matplotlib.pyplot as plt
+import numpy as np
 import torch
 from matplotlib.pyplot import Figure
 from numpy import ndarray
-import numpy as np
-
-from pathlib import Path
+from pytorch_lightning.core.lightning import LightningModule
 from pytorch_lightning.loggers import TensorBoardLogger
 from torch import Tensor
-from typing import Any, Dict, List, Tuple, Union, Optional
-from pytorch_lightning.core.lightning import LightningModule
-import matplotlib.gridspec as gridspec
 
 
 def make_imgs(img: ndarray, imin: Any = None, imax: Any = None) -> ndarray:
@@ -33,9 +33,9 @@ def get_logger(logdir: Path) -> TensorBoardLogger:
 class BrainSlices:
     def __init__(self, lightning: LightningModule, target: Tensor, prediction: Tensor):
         self.lightning = lightning
-        self.target_img: ndarray = target.cpu().detach().numpy().squeeze() if torch.is_tensor(
-            target
-        ) else target
+        self.target_img: ndarray = (
+            target.cpu().detach().numpy().squeeze() if torch.is_tensor(target) else target
+        )
         self.predict_img: ndarray = (
             prediction.cpu().detach().numpy().squeeze()
             if torch.is_tensor(prediction)

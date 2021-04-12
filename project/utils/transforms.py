@@ -1,18 +1,19 @@
 from typing import List
-from monai.transforms import (
-    NormalizeIntensity,
-    Compose,
-    ToTensor,
-    Resize,
-    ToTensord,
-    SpatialPad,
-    RandAffined,
-)
-from monai.transforms.compose import Transform
-from utils.cropping import crop_to_nonzero
-from utils.const import IMAGESIZE
 
 import numpy as np
+from monai.transforms import (
+    Compose,
+    NormalizeIntensity,
+    RandAffined,
+    Resize,
+    SpatialPad,
+    ToTensor,
+    ToTensord,
+)
+from monai.transforms.compose import Transform
+
+from utils.const import IMAGESIZE
+from utils.cropping import crop_to_nonzero
 
 
 class Crop(Transform):

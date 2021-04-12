@@ -2,16 +2,13 @@ from argparse import ArgumentParser
 from typing import Any
 
 import numpy as np
-import pandas as pd
 import pytorch_lightning as pl
-import random
 import torch
-import torch.nn.functional as F
-from torch import Tensor
-from torch.nn import Sigmoid, MSELoss, Softmax
-from model.unet.unet import UNet
 from pytorch_lightning.utilities.parsing import AttributeDict
+from torch.nn import MSELoss, Sigmoid
 from torch.optim.lr_scheduler import CosineAnnealingLR
+
+from model.unet.unet import UNet
 from utils.visualize_dti import log_all_info
 
 
@@ -111,9 +108,7 @@ class LitModel2DDiffusion(pl.LightningModule):
         diff_255 = np.absolute(pred_255.ravel() - targ_255.ravel())
         mae = np.mean(diff_255)
 
-        diff_255_mask = np.absolute(
-            pred_255[~brain_mask].ravel() - targ_255[~brain_mask].ravel()
-        )
+        diff_255_mask = np.absolute(pred_255[~brain_mask].ravel() - targ_255[~brain_mask].ravel())
         mae_mask = np.mean(diff_255_mask)
 
         return {"MAE": mae, "MAE_mask": mae_mask}
@@ -159,9 +154,7 @@ class LitModel2DDiffusion(pl.LightningModule):
         diff_255 = np.absolute(pred_255.ravel() - targ_255.ravel())
         mae = np.mean(diff_255)
 
-        diff_255_mask = np.absolute(
-            pred_255[~brain_mask].ravel() - targ_255[~brain_mask].ravel()
-        )
+        diff_255_mask = np.absolute(pred_255[~brain_mask].ravel() - targ_255[~brain_mask].ravel())
         mae_mask = np.mean(diff_255_mask)
 
         return {"MAE": mae, "MAE_mask": mae_mask}

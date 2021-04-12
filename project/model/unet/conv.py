@@ -1,6 +1,6 @@
 # Code in this file adapted from: https://github.com/fepegar/unet/blob/master/unet/conv.py
 
-from typing import Optional, List
+from typing import List, Optional
 
 import torch.nn as nn
 from torch import Tensor

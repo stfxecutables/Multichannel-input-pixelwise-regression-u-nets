@@ -1,20 +1,16 @@
-import functools
-import os
-from pathlib import Path
-from typing import List, Optional, Tuple
-
-import monai
 import random
-import torch
+from pathlib import Path
+from typing import List, Optional
+
 import numpy as np
-import pandas as pd
 import pytorch_lightning as pl
-from utils.const import DATA_ROOT
-from monai.transforms import Compose
-from utils.transforms import get_train_img_transforms, get_val_img_transforms, get_label_transforms
+import torch
+from monai.transforms import Compose, LoadNifti, Randomizable, apply_transform
 from sklearn.model_selection import train_test_split
-from monai.transforms import LoadNifti, Randomizable, apply_transform
 from torch.utils.data import DataLoader, Dataset
+
+from utils.const import DATA_ROOT
+from utils.transforms import get_label_transforms, get_train_img_transforms, get_val_img_transforms
 
 
 class BraTSDataset(Dataset, Randomizable):
@@ -61,7 +57,9 @@ class BraTSDataset(Dataset, Randomizable):
 
 
 class DataModule(pl.LightningDataModule):
-    def __init__(self, batch_size: int, X_image: str, y_image: str, using_flair: bool, fine_tune: bool):
+    def __init__(
+        self, batch_size: int, X_image: str, y_image: str, using_flair: bool, fine_tune: bool
+    ):
         super().__init__()
         self.batch_size = batch_size
         self.X_image = X_image
@@ -80,7 +78,9 @@ class DataModule(pl.LightningDataModule):
             X = X[:300]
             y = y[:300]
 
-        X_train, X_val, y_train, y_val = train_test_split(X, y, test_size=0.2, random_state=random_state)
+        X_train, X_val, y_train, y_val = train_test_split(
+            X, y, test_size=0.2, random_state=random_state
+        )
 
         train_transforms = get_train_img_transforms()
         val_transforms = get_val_img_transforms()

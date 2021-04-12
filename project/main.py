@@ -3,18 +3,18 @@ from argparse import ArgumentParser, Namespace
 from pathlib import Path
 
 import pytorch_lightning as pl
-from utils.const import COMPUTECANADA
-from lig_module.data_model import DataModule
-from lig_module.data_model_dti import DataModuleDiffusion
-from lig_module.data_model_longitudinal import DataModuleLongitudinal
-from lig_module.data_model_2d_dti import DataModule2DDiffusion
-from lig_module.lig_model import LitModel
-from lig_module.lig_model_dti import LitModelDiffusion
-from lig_module.lig_model_longitudinal import LitModelLongitudinal
-from lig_module.lig_model_2d_dti import LitModel2DDiffusion
-
 from pytorch_lightning import Trainer, loggers
 from pytorch_lightning.callbacks import LearningRateMonitor, ModelCheckpoint
+
+from lig_module.data_model import DataModule
+from lig_module.data_model_2d_dti import DataModule2DDiffusion
+from lig_module.data_model_dti import DataModuleDiffusion
+from lig_module.data_model_longitudinal import DataModuleLongitudinal
+from lig_module.lig_model import LitModel
+from lig_module.lig_model_2d_dti import LitModel2DDiffusion
+from lig_module.lig_model_dti import LitModelDiffusion
+from lig_module.lig_model_longitudinal import LitModelLongitudinal
+from utils.const import COMPUTECANADA
 
 
 def main(hparams: Namespace) -> None:

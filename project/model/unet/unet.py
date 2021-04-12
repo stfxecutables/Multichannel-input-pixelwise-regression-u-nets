@@ -11,12 +11,14 @@ The code specifically in this `unet.py` file is based on
 https://github.com/fepegar/unet/blob/master/unet/unet.py
 """
 
-from typing import Optional, List, Dict, Any
+from typing import Any, Dict, List, Optional
+
 import torch.nn as nn
 from torch import Tensor
-from .encoding import Encoder, EncodingBlock
-from .decoding import Decoder
+
 from .conv import ConvolutionalBlock
+from .decoding import Decoder
+from .encoding import Encoder, EncodingBlock
 
 
 class UNet(nn.Module):

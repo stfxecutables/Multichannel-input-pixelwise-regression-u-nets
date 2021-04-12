@@ -1,22 +1,13 @@
-import functools
-import os
-from utils.const import DATA_ROOT
-import torch
-from pathlib import Path
-from monai import transforms
-from typing import List, Optional, Tuple
+from typing import List, Optional
 
-import monai
-import random
 import numpy as np
-import pandas as pd
 import pytorch_lightning as pl
-from utils.const import DIFFUSION_INPUT, DIFFUSION_LABEL
+import torch
 from monai.transforms import Compose
-from utils.transforms import get_diffusion_preprocess, get_diffusion_label_preprocess
-from sklearn.model_selection import train_test_split
-from monai.transforms import LoadNifti, apply_transform
 from torch.utils.data import DataLoader, Dataset
+
+from utils.const import DATA_ROOT
+from utils.transforms import get_diffusion_label_preprocess, get_diffusion_preprocess
 
 
 class Diffusion2DDataset(Dataset):
@@ -53,7 +44,9 @@ class DataModule2DDiffusion(pl.LightningDataModule):
         X = sorted(list(DATA_ROOT.glob("**/*.npz")))
         preprocess = get_diffusion_preprocess()
 
-        self.train_dataset = Diffusion2DDataset(path=X[:-1] * 200, X_transform=preprocess, type=self.type)
+        self.train_dataset = Diffusion2DDataset(
+            path=X[:-1] * 200, X_transform=preprocess, type=self.type
+        )
         self.val_dataset = Diffusion2DDataset(
             path=[X[-1]] * 4, X_transform=preprocess, type=self.type
         )  # *4 in order to allocate on 4 GPUs

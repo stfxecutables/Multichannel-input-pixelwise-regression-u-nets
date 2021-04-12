@@ -1,23 +1,15 @@
-import functools
-import os
-from token import OP
-from utils.const import DATA_ROOT
-import torch
-from pathlib import Path
-from monai import transforms
-from monai.utils import set_determinism
-from typing import List, Optional, Tuple
-
-import monai
 import random
+from typing import List, Optional
+
 import numpy as np
-import pandas as pd
 import pytorch_lightning as pl
-from utils.const import DIFFUSION_INPUT, DIFFUSION_LABEL
-from monai.transforms import Compose
-from utils.transforms import get_diffusion_transform
-from monai.transforms import LoadNifti, apply_transform
+import torch
+from monai.transforms import Compose, apply_transform
+from monai.utils import set_determinism
 from torch.utils.data import DataLoader, Dataset
+
+from utils.const import DATA_ROOT
+from utils.transforms import get_diffusion_transform
 
 
 class DiffusionDataset(Dataset):
@@ -66,8 +58,12 @@ class DataModuleDiffusion(pl.LightningDataModule):
 
         print(f"validation image path: {X[-3:]}")
 
-        self.train_dataset = DiffusionDataset(path=X[:-3] * self.times, transform=transform, type=self.type)
-        self.val_dataset = DiffusionDataset(path=X[-3:] * 4, type=self.type)  # *4 in order to allocate on 4 GPUs
+        self.train_dataset = DiffusionDataset(
+            path=X[:-3] * self.times, transform=transform, type=self.type
+        )
+        self.val_dataset = DiffusionDataset(
+            path=X[-3:] * 4, type=self.type
+        )  # *4 in order to allocate on 4 GPUs
 
     def prepare_data(self, *args, **kwargs):
         # set deterministic training for reproducibility
@@ -77,7 +73,9 @@ class DataModuleDiffusion(pl.LightningDataModule):
 
     def train_dataloader(self):
         print(f"get {len(self.train_dataset)} training 3D image!")
-        return DataLoader(self.train_dataset, batch_size=self.batch_size, num_workers=0, shuffle=True)
+        return DataLoader(
+            self.train_dataset, batch_size=self.batch_size, num_workers=0, shuffle=True
+        )
 
     def val_dataloader(self):
         print(f"get {len(self.val_dataset)} validation 3D image!")

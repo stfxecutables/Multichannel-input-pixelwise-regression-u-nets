@@ -1,25 +1,21 @@
-import functools
-import os
-from pathlib import Path
-from typing import List, Optional, Tuple
-
-import monai
 import random
-import torch
+from pathlib import Path
+from typing import Optional
+
 import numpy as np
-import pandas as pd
 import pytorch_lightning as pl
-from utils.const import ADNI_LIST
-from monai.transforms import Compose
+import torch
+from monai.transforms import Compose, LoadNifti, Randomizable, apply_transform
 from nibabel.freesurfer.mghformat import MGHImage
+from sklearn.model_selection import train_test_split
+from torch.utils.data import DataLoader, Dataset
+
+from utils.const import ADNI_LIST
 from utils.transforms import (
+    get_longitudinal_label_transforms,
     get_longitudinal_train_img_transforms,
     get_longitudinal_val_img_transforms,
-    get_longitudinal_label_transforms,
 )
-from sklearn.model_selection import train_test_split
-from monai.transforms import LoadNifti, Randomizable, apply_transform
-from torch.utils.data import DataLoader, Dataset
 
 
 class LongitudinalDataset(Dataset, Randomizable):
@@ -99,17 +95,25 @@ class DataModuleLongitudinal(pl.LightningDataModule):
                 X.append([m12, m06, sc])
 
         random_state = random.randint(0, 100)
-        X_train, X_val, y_train, y_val = train_test_split(X, y, test_size=0.2, random_state=random_state)
+        X_train, X_val, y_train, y_val = train_test_split(
+            X, y, test_size=0.2, random_state=random_state
+        )
 
         print(f"validation image path: {X_val}")
 
         train_transforms = get_longitudinal_train_img_transforms()
         val_transforms = get_longitudinal_val_img_transforms()
         self.train_dataset = LongitudinalDataset(
-            X_path=X_train, y_path=y_train, transform=train_transforms, num_scan_training=self.num_scan_training
+            X_path=X_train,
+            y_path=y_train,
+            transform=train_transforms,
+            num_scan_training=self.num_scan_training,
         )
         self.val_dataset = LongitudinalDataset(
-            X_path=X_val, y_path=y_val, transform=val_transforms, num_scan_training=self.num_scan_training
+            X_path=X_val,
+            y_path=y_val,
+            transform=val_transforms,
+            num_scan_training=self.num_scan_training,
         )
 
     def train_dataloader(self):

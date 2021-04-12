@@ -1,23 +1,18 @@
+import random
 from argparse import ArgumentParser
 from typing import Any
 
 import numpy as np
-import pandas as pd
 import pytorch_lightning as pl
-import random
 import torch
-import seaborn as sns
-import matplotlib.pyplot as plt
-import torch.nn.functional as F
-from torch import Tensor
-from torch.nn import Sigmoid, MSELoss, Softmax, L1Loss, SmoothL1Loss
-from monai.losses import DiceLoss
-from model.unet.unet import UNet
 from pytorch_lightning.utilities.parsing import AttributeDict
-from torch.optim.lr_scheduler import CosineAnnealingLR
-from utils.visualize import log_all_info
-from skimage.metrics import structural_similarity as ssim
 from skimage.metrics import peak_signal_noise_ratio as psnr
+from skimage.metrics import structural_similarity as ssim
+from torch.nn import L1Loss, MSELoss, Sigmoid, SmoothL1Loss
+from torch.optim.lr_scheduler import CosineAnnealingLR
+
+from model.unet.unet import UNet
+from utils.visualize import log_all_info
 
 
 def scale_img_to_0_255(img: np.ndarray, imin: Any = None, imax: Any = None) -> np.ndarray:
@@ -122,8 +117,12 @@ class LitModelLongitudinal(pl.LightningModule):
         elif self.hparams.in_channels == 1:
             brain_mask = inputs == inputs[0][0][0]
 
-        pred_clip = np.clip(predicts, -self.clip_min, self.clip_max) - min(-self.clip_min, np.min(predicts))
-        targ_clip = np.clip(targets, -self.clip_min, self.clip_max) - min(-self.clip_min, np.min(targets))
+        pred_clip = np.clip(predicts, -self.clip_min, self.clip_max) - min(
+            -self.clip_min, np.min(predicts)
+        )
+        targ_clip = np.clip(targets, -self.clip_min, self.clip_max) - min(
+            -self.clip_min, np.min(targets)
+        )
         pred_255 = np.floor(256 * (pred_clip / (self.clip_min + self.clip_max)))
         targ_255 = np.floor(256 * (targ_clip / (self.clip_min + self.clip_max)))
         pred_255[brain_mask] = 0
@@ -190,8 +189,12 @@ class LitModelLongitudinal(pl.LightningModule):
         elif self.hparams.in_channels == 1:
             brain_mask = inputs == inputs[0][0][0]
 
-        pred_clip = np.clip(predicts, -self.clip_min, self.clip_max) - min(-self.clip_min, np.min(predicts))
-        targ_clip = np.clip(targets, -self.clip_min, self.clip_max) - min(-self.clip_min, np.min(targets))
+        pred_clip = np.clip(predicts, -self.clip_min, self.clip_max) - min(
+            -self.clip_min, np.min(predicts)
+        )
+        targ_clip = np.clip(targets, -self.clip_min, self.clip_max) - min(
+            -self.clip_min, np.min(targets)
+        )
         pred_255 = np.floor(256 * (pred_clip / (self.clip_min + self.clip_max)))
         targ_255 = np.floor(256 * (targ_clip / (self.clip_min + self.clip_max)))
         pred_255[brain_mask] = 0
@@ -217,7 +220,9 @@ class LitModelLongitudinal(pl.LightningModule):
 
     def configure_optimizers(self):
         optimizer = torch.optim.Adam(
-            self.model.parameters(), lr=self.hparams.learning_rate, weight_decay=self.hparams.weight_decay
+            self.model.parameters(),
+            lr=self.hparams.learning_rate,
+            weight_decay=self.hparams.weight_decay,
         )
         # scheduler = ReduceLROnPlateau(optimizer, threshold=1e-10)
         lr_dict = {
@@ -234,9 +239,14 @@ class LitModelLongitudinal(pl.LightningModule):
         parser = ArgumentParser(parents=[parent_parser], add_help=False)
         parser.add_argument("--learning_rate", type=float, default=1e-15)
         parser.add_argument("--loss", type=str, choices=["l1", "l2", "smoothl1"], default="l2")
-        parser.add_argument("--activation", type=str, choices=["ReLU", "LeakyReLU"], default="LeakyReLU")
         parser.add_argument(
-            "--normalization", type=str, choices=["Batch", "Group", "InstanceNorm3d"], default="InstanceNorm3d"
+            "--activation", type=str, choices=["ReLU", "LeakyReLU"], default="LeakyReLU"
+        )
+        parser.add_argument(
+            "--normalization",
+            type=str,
+            choices=["Batch", "Group", "InstanceNorm3d"],
+            default="InstanceNorm3d",
         )
         parser.add_argument("--weight_decay", type=float, default=1e-6)
         parser.add_argument("--clip_min", type=int, default=2)
