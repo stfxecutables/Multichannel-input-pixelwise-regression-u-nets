@@ -33,15 +33,27 @@ The U-Net is a robust general-purpose deep learning architecture
   represents a single deep learning architecture capable of solving
   a variety of image estimation problems.
 
+## Preprocessing
+In application 1 (predicting a pending MRI examination of patients with Alzheimer's disease), We did skull stripping and co-registered each volume to the corresponding target. The following are commands we have used:
+
+skull stripping:
+```bash
+bet <input> <output> -f 0.15 -S -B
+```
+
+Registration (using FreeSurfer):
+```bash
+mri_robust_register --mov <mov.mgz> --dst <dst.mgz> --lta <m2d.lta> --mapmov <aligned.mgz> --iscale --satit --affine 
+```
+
 ## Model
 We use a 5-level 3D U-Net architecture, with Leaky ReLU activation 
 (<img src="https://latex.codecogs.com/svg.image?\alpha&space;=&space;0.2" 
 title="\alpha = 0.2" />), learning rate (<img src="https://latex.codecogs.com/svg.image?\alpha&space;=&space;10&space;^&space;{-5}" 
-title="\alpha = 10 ^ {-5}" />), Adam 
-optimizer, mean average error (MAE) loss function, z-score 
-intensity normalization and co-registered volumes resized 
-to 128x128x128 for each tasks. Batch size was 3 in application 1, 
-and 1 in applications 2 and 3.
+title="\alpha = 10 ^ {-5}" />), Adam optimizer, mean average error 
+(MAE) loss function, z-score intensity normalization and 
+co-registered volumes resized to 128x128x128 for each tasks. 
+Batch size was 3 in application 1, and 1 in applications 2 and 3.
 
 ## Results
 ### Qualitative Results

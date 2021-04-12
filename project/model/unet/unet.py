@@ -67,7 +67,6 @@ class UNet(nn.Module):
             dimensions=dimensions,
             conv_num=conv_num_in_layer[-1],
             num_block=len(conv_num_in_layer),
-            downsampling_type=None,
             **shared_options,
         )
 
