@@ -7,7 +7,7 @@
 </div>
 
 ## Description
-Pytorch implementation of Multichannel input pixelwise regression 3D U-Nets.
+This is the official Pytorch implementation of Multichannel input pixelwise regression 3D U-Nets for medical image estimation with 3 applications in brain MRI, submitted at MIDL 2021 as short paper.
 
 ## Abstract
 The U-Net is a robust general-purpose deep learning architecture
@@ -47,16 +47,21 @@ mri_robust_register --mov <mov.mgz> --dst <dst.mgz> --lta <m2d.lta> --mapmov <al
 ```
 
 ## Model
-We use a 5-level 3D U-Net architecture, with Leaky ReLU activation 
-(<img src="https://latex.codecogs.com/svg.image?\alpha&space;=&space;0.2" 
-title="\alpha = 0.2" />), learning rate (<img src="https://latex.codecogs.com/svg.image?\alpha&space;=&space;10&space;^&space;{-5}" 
-title="\alpha = 10 ^ {-5}" />), Adam optimizer, mean average error 
-(MAE) loss function, z-score intensity normalization and 
-co-registered volumes resized to 128x128x128 for each tasks. 
-Batch size was 3 in application 1, and 1 in applications 2 and 3.
+We use a 5-level 3D U-Net architecture, with Leaky ReLU activation (<img src="https://latex.codecogs.com/svg.image?\alpha&space;=&space;0.2" title="\alpha = 0.2" />), learning rate (<img src="https://latex.codecogs.com/svg.image?\alpha&space;=&space;10&space;^&space;{-5}"  title="\alpha = 10 ^ {-5}" />), Adam optimizer, mean average error  (MAE) loss function, z-score intensity normalization and  co-registered volumes resized to 128x128x128 for each tasks. Batch size was 3 inapplications 1 and 3, and 1 in application 2. We compare all approaches with mean squarederror (MSE), MAE, structural similarity index measure (SSIM), and peak signal to noise ratio (PSNR).
 
 ## Results
 ### Qualitative Results
 ![](figures/qualitative_results.png)
 ### Quantitative Results
 ![](figures/quantitative_results.png)
+
+## Citation
+If any of the results in this paper or code are useful for your research, please cite the corresponding paper:
+```
+@inproceedings{Wang2021,
+   author = {Jueqi Wang and Derek Berger and David Mattie and Jacob Levman},
+   journal = {International conference on Medical Imaging with Deep Learning},
+   title = {Multichannel input pixelwise regression 3D U-Nets for medical image estimation with 3 applications in brain MRI},
+   year = {2021},
+}
+```

@@ -114,11 +114,20 @@ class LitModel2DDiffusion(pl.LightningModule):
         return {"MAE": mae, "MAE_mask": mae_mask}
 
     def validation_epoch_end(self, validation_step_outputs):
-        average = np.mean(validation_step_outputs[0]["MAE"])
+        average = np.mean(
+            [validation_step_output["MAE"] for validation_step_output in validation_step_outputs]
+        )
         self.log("val_MAE", average, sync_dist=True, on_step=False, on_epoch=True)
+        print(f"average absolute error on whole image: {average}")
 
-        average = np.mean(validation_step_outputs[0]["MAE_mask"])
+        average = np.mean(
+            [
+                validation_step_output["MAE_mask"]
+                for validation_step_output in validation_step_outputs
+            ]
+        )
         self.log("val_MAE_mask", average, sync_dist=True, on_step=False, on_epoch=True)
+        print(f"average absolute error on mask: {average}")
 
     def test_step(self, batch, batch_idx: int):
         inputs, targets = batch
@@ -160,10 +169,16 @@ class LitModel2DDiffusion(pl.LightningModule):
         return {"MAE": mae, "MAE_mask": mae_mask}
 
     def test_epoch_end(self, test_step_outputs):
-        average = np.mean(test_step_outputs[0]["MAE"])
+        average = np.mean(
+            [validation_step_output["MAE"] for validation_step_output in test_step_outputs]
+        )
+        self.log("test_MAE", average, sync_dist=True, on_step=False, on_epoch=True)
         print(f"average absolute error on whole image: {average}")
 
-        average = np.mean(test_step_outputs[0]["MAE_mask"])
+        average = np.mean(
+            [validation_step_output["MAE_mask"] for validation_step_output in test_step_outputs]
+        )
+        self.log("test_MAE_mask", average, sync_dist=True, on_step=False, on_epoch=True)
         print(f"average absolute error on mask: {average}")
 
     def configure_optimizers(self):
